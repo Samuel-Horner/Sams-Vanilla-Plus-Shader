@@ -6,14 +6,9 @@
 #ifdef FRAGMENT_SHADER
 
 #include "/lib/texture_formats.glsl"
-
-#define LIGHTSOURCE_THRESHOLD 0.9
+#include "/lib/fog.glsl"
 
 uniform sampler2D gtexture;
-
-uniform float fogStart;
-uniform float fogEnd;
-uniform vec3 fogColor;
 
 in vec2 texCoord;
 in vec2 lightCoord;
@@ -32,8 +27,7 @@ void main() {
 
     calcLighting(shadowPos, vertexDistance, lightCoord, vertexDistance, color);
 
-    float fogValue = vertexDistance < fogEnd ? smoothstep(fogStart, fogEnd, vertexDistance) : 1.0;
-    pixelColor = vec4(mix(color.xyz, fogColor, fogValue), color.a);
+    pixelColor = applyFog(color, vertexDistance);
 }
 
 #endif

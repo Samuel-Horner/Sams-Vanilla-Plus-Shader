@@ -5,6 +5,8 @@
 #ifdef FRAGMENT_SHADER
 
 #include "/lib/texture_formats.glsl"
+#define CLOUD_FOG
+#include "/lib/fog.glsl"
 
 in vec2 texCoord;
 in vec2 lightCoord;
@@ -15,10 +17,6 @@ in float vertexDistance;
 uniform sampler2D gtexture;
 uniform sampler2D lightmap;
 
-uniform float fogStart;
-uniform float fogEnd;
-uniform vec3 fogColor;
-
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 pixelColor;
 
@@ -28,11 +26,9 @@ void main() {
     
     vec4 lightColor = texture(lightmap, lightCoord);
 
-    float fogValue = vertexDistance < fogEnd ? smoothstep(fogStart, fogEnd, vertexDistance) : 1.0;
-
     vec4 finalColor = texColor * lightColor * glColor;
 
-    pixelColor = vec4(mix(finalColor.xyz, fogColor, fogValue), finalColor.a - fogValue);
+    pixelColor = applyFog(finalColor, vertexDistance);
 }
 
 #endif
