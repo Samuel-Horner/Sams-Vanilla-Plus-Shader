@@ -1,0 +1,3 @@
+- ComplementaryShaders for the template file for programs
+- https://github.com/shaderLABS/Shadow-Tutorial for shadow distortion and vertex shader code
+- https://github.com/saada2006/MinecraftShaderProgramming for smooth shadow code
