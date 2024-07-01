@@ -42,8 +42,7 @@ float getShadow(in vec3 sampleCoords, in sampler2D tex){
     #endif
 }
 
-void calcLighting(in vec4 shadowPos, in vec2 lm, in float vertexDistance, inout vec4 color) {
-    float all_shadow = getShadow(shadowPos.xyz, shadowtex0);
+void calcLighting(in vec4 shadowPos, in float vertDis, in vec2 lm, in float vertexDistance, inout vec4 color) {
     #ifdef DYNAMICLIGHT
     int lightLevel = 0;
     if (heldItemId == 44000 || heldItemId2 == 44000){
@@ -59,7 +58,13 @@ void calcLighting(in vec4 shadowPos, in vec2 lm, in float vertexDistance, inout 
         }
     }
     #endif
-    color *= vec4(texture(lightmap, lm).xyz * pow(all_shadow, pow(1. - lm.x, 2.2)), 1.);
+    float all_shadow = 1.;
+    if (vertDis < SHADOW_DISTANCE){
+        all_shadow = getShadow(shadowPos.xyz, shadowtex0);
+        color *= vec4(texture(lightmap, lm).xyz * pow(all_shadow, pow(1. - lm.x, 2.2)), 1.);
+    } else {
+        color *= vec4(texture(lightmap, lm).xyz, 1.);
+    }
 }
 
 #endif

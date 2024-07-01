@@ -1,7 +1,3 @@
-//////////////////////////////////////////////////
-// A3Shaders (template file from Complementary) //
-//////////////////////////////////////////////////
-
 //Common//
 #include "/lib/common.glsl"
 
@@ -13,7 +9,6 @@
 uniform sampler2D gtexture;
 
 in vec2 texCoord;
-in vec4 glColor;
 
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 pixelColor;
@@ -31,7 +26,6 @@ void main() {
 #include "/lib/distort.glsl"
 
 out vec2 texCoord;
-out vec4 glColor;
 
 void main() {
 	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
