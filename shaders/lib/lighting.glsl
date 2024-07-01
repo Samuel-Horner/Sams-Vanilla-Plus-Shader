@@ -10,6 +10,8 @@ uniform int heldItemId;
 uniform int heldItemId2;
 uniform int heldBlockLightValue;
 uniform int heldBlockLightValue2;
+
+const float maxLightLevel = 1. - 1./32.;
 #endif
 
 #ifdef SMOOTH_SHADOWS
@@ -18,31 +20,40 @@ uniform sampler2D noisetex;
 const int shadowSamplesPerSize = 2 * SHADOW_SAMPLES + 1;
 const int totalSamples = shadowSamplesPerSize * shadowSamplesPerSize;
 #endif
-const float maxLightLevel = 1. - 1./32.;
 
-float getShadow(in vec3 sampleCoords, in sampler2D tex){
-    #ifdef SMOOTH_SHADOWS
-        float randomAngle = texture2D(noisetex, sampleCoords.xy * 20.).r * 100.;
-        float cosTheta = cos(randomAngle);
-        float sinTheta = sin(randomAngle);
-        mat2 rotation =  mat2(cosTheta, -sinTheta, sinTheta, cosTheta) / shadowMapResolution;
-        float shadowAccum = 0.;
-        for(int x = -SHADOW_SAMPLES; x <= SHADOW_SAMPLES; x++){
-            for(int y = -SHADOW_SAMPLES; y <= SHADOW_SAMPLES; y++){
-                vec2 offset = rotation * vec2(x, y);
-                vec3 currentSampleCoordinate = vec3(sampleCoords.xy + offset, sampleCoords.z);
-                float shadowMapDepth = texture2D(tex, currentSampleCoordinate.xy).r;
-                shadowAccum += shadowMapDepth < currentSampleCoordinate.z ? smoothstep(-SHADOW_BRIGHTNESS, 1., shadowMapDepth) : 1.0;
+#ifndef NO_SHADING
+float getShadow(in vec4 sampleCoords, in sampler2D tex){
+    if (sampleCoords.w > 0.){
+        #ifdef SMOOTH_SHADOWS
+            float randomAngle = texture2D(noisetex, sampleCoords.xy * 20.).r * 100.;
+            float cosTheta = cos(randomAngle);
+            float sinTheta = sin(randomAngle);
+            mat2 rotation =  mat2(cosTheta, -sinTheta, sinTheta, cosTheta) / shadowMapResolution;
+            float shadowAccum = 0.;
+            for(int x = -SHADOW_SAMPLES; x <= SHADOW_SAMPLES; x++){
+                for(int y = -SHADOW_SAMPLES; y <= SHADOW_SAMPLES; y++){
+                    vec2 offset = rotation * vec2(x, y);
+                    vec3 currentSampleCoordinate = vec3(sampleCoords.xy + offset, sampleCoords.z);
+                    float shadowMapDepth = texture2D(tex, currentSampleCoordinate.xy).r;
+                    shadowAccum += shadowMapDepth < currentSampleCoordinate.z ? SHADOW_BRIGHTNESS : 1.;
+                }
             }
-        }
-        return shadowAccum / totalSamples;
-    #else
-        float shadowMapDepth = texture2D(tex, sampleCoords.xy).r;
-        return shadowMapDepth < sampleCoords.z ? smoothstep(-SHADOW_BRIGHTNESS, 1., shadowMapDepth) : 1.0;
-    #endif
+            return shadowAccum / totalSamples;
+        #else
+            float shadowMapDepth = texture2D(tex, sampleCoords.xy).r;
+            return shadowMapDepth < sampleCoords.z ? SHADOW_BRIGHTNESS : 1.;
+        #endif
+    } else {
+        return 1.;
+    }
 }
+#endif
 
-void calcLighting(in vec4 shadowPos, in float vertDis, in vec2 lm, in float vertexDistance, inout vec4 color) {
+#ifndef NO_SHADING
+void calcLighting(in vec4 shadowPos, in float vertexDistance, in vec2 lm, inout vec4 color) {
+#else
+void calcLighting(in vec2 lm, inout vec4 color, in float vertexDistance) {
+#endif
     #ifdef DYNAMICLIGHT
     int lightLevel = 0;
     if (heldItemId == 44000 || heldItemId2 == 44000){
@@ -58,18 +69,18 @@ void calcLighting(in vec4 shadowPos, in float vertDis, in vec2 lm, in float vert
         }
     }
     #endif
-    float all_shadow = 1.;
-    if (vertDis < SHADOW_DISTANCE){
-        all_shadow = getShadow(shadowPos.xyz, shadowtex0);
-        color *= vec4(texture(lightmap, lm).xyz * pow(all_shadow, pow(1. - lm.x, 2.2)), 1.);
-    } else {
-        color *= vec4(texture(lightmap, lm).xyz, 1.);
-    }
+    #ifndef NO_SHADING
+    float all_shadow = getShadow(shadowPos, shadowtex0);
+    color *= vec4(texture(lightmap, lm).xyz * pow(all_shadow, pow(1. - lm.x, 2.2)), 1.);
+    #else
+    color *= vec4(texture(lightmap, lm).xyz, 1.);
+    #endif
 }
 
 #endif
 
 #ifdef VERTEX_SHADER
+#ifndef NO_SHADING
 
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
@@ -77,16 +88,21 @@ uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 uniform vec3 shadowLightPosition;
 
-void calcShadows(out vec4 shadowPos, inout vec2 lightCoord) {
+void calcShadows(out vec4 shadowPos) {
     float lightDot = dot(normalize(shadowLightPosition), normalize(gl_NormalMatrix * gl_Normal));
-    vec4 viewPos = gl_ModelViewMatrix * gl_Vertex;
-    vec4 playerPos = gbufferModelViewInverse * viewPos;
-    shadowPos = shadowProjection * (shadowModelView * playerPos);
-    float bias = computeBias(shadowPos.xyz);
-    shadowPos.xyz = distort(shadowPos.xyz);
-    shadowPos.xyz = shadowPos.xyz * 0.5 + 0.5;
-    vec4 normal = shadowProjection * vec4(mat3(shadowModelView) * (mat3(gbufferModelViewInverse) * (gl_NormalMatrix * gl_Normal)), 1.0);
-    shadowPos.xyz += normal.xyz / normal.w * bias;
-    shadowPos.w = lightDot;
-}  
+    if (lightDot > 0.){
+        vec4 viewPos = gl_ModelViewMatrix * gl_Vertex;
+        vec4 playerPos = gbufferModelViewInverse * viewPos;
+        shadowPos = shadowProjection * (shadowModelView * playerPos);
+        float bias = computeBias(shadowPos.xyz);
+        shadowPos.xyz = distort(shadowPos.xyz);
+        shadowPos.xyz = shadowPos.xyz * 0.5 + 0.5;
+        vec4 normal = shadowProjection * vec4(mat3(shadowModelView) * (mat3(gbufferModelViewInverse) * (gl_NormalMatrix * gl_Normal)), 1.0);
+        shadowPos.xyz += normal.xyz / normal.w * bias;
+        shadowPos.w = lightDot;
+    } else {
+        shadowPos = vec4(0.);
+    }
+}
+#endif
 #endif

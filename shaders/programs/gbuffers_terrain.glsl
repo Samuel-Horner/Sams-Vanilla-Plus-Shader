@@ -25,7 +25,7 @@ void main() {
     
     vec4 color = texColor * glColor;
 
-    calcLighting(shadowPos, vertexDistance, lightCoord, vertexDistance, color);
+    calcLighting(shadowPos, vertexDistance, lightCoord, color);
 
     pixelColor = applyFog(color, vertexDistance);
 }
@@ -46,7 +46,7 @@ void main() {
     lightCoord = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
     glColor = gl_Color;
 
-    calcShadows(shadowPos, lightCoord);
+    calcShadows(shadowPos);
     
     vertexDistance = length((gl_ModelViewMatrix * gl_Vertex).xyz);
     gl_Position = ftransform();
