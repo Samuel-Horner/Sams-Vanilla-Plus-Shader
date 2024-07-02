@@ -23,7 +23,7 @@ const int totalSamples = shadowSamplesPerSize * shadowSamplesPerSize;
 
 #ifndef NO_SHADING
 float getShadow(in vec4 sampleCoords, in sampler2D tex){
-    if (sampleCoords.w > 0.){
+    if (sampleCoords.w > 0.001){
         #ifdef SMOOTH_SHADOWS
             float randomAngle = texture2D(noisetex, sampleCoords.xy * 20.).r * 100.;
             float cosTheta = cos(randomAngle);
@@ -44,7 +44,7 @@ float getShadow(in vec4 sampleCoords, in sampler2D tex){
             return shadowMapDepth < sampleCoords.z ? SHADOW_BRIGHTNESS : 1.;
         #endif
     } else {
-        return 1.;
+        return SHADOW_BRIGHTNESS;
     }
 }
 #endif

@@ -1,0 +1,9 @@
+
+# Screen
+screen.SHADOWS = Shadows
+
+# Options
+option.SMOOTH_SHADOWS = Smooth Shadows
+option.shadowMapResolution = Shadow Map Resolution
+option.SHADOW_BRIGHTNESS = Shadow Brightness
+option.SHADOW_SAMPLES = Shadow Samples
