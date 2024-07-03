@@ -1,9 +1,22 @@
+# Profiles
+profile.HIGH = High
+profile.HIGH.comment = Enables smooth shadows
+profile.MED = Medium
+profile.MED.comment = Enables smooth shadows with lower resolution
+profile.LOW = Low
+profile.LOW.comment = Disables smooth shadows
 
 # Screen
 screen.SHADOWS = Shadows
+screen.LIGHTING = Lighting
+screen.ATMOSPHERE = Atmospherics
 
 # Options
 option.SMOOTH_SHADOWS = Smooth Shadows
 option.shadowMapResolution = Shadow Map Resolution
 option.SHADOW_BRIGHTNESS = Shadow Brightness
 option.SHADOW_SAMPLES = Shadow Samples
+option.DYNAMICLIGHT = Dynamic Light
+option.DYNAMICLIGHT_RADIUS = Dynamic Light Radius
+option.sunPathRotation = Sun Rotation
+option.FOG = Border Fog
