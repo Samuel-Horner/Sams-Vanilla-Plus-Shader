@@ -12,6 +12,7 @@ screen.LIGHTING = Lighting
 screen.ATMOSPHERE = Atmospherics
 
 # Options
+option.NO_SHADOWS = Disable Shadows
 option.SMOOTH_SHADOWS = Smooth Shadows
 option.shadowMapResolution = Shadow Map Resolution
 option.SHADOW_BRIGHTNESS = Shadow Brightness
@@ -20,3 +21,5 @@ option.DYNAMICLIGHT = Dynamic Light
 option.DYNAMICLIGHT_RADIUS = Dynamic Light Radius
 option.sunPathRotation = Sun Rotation
 option.FOG = Border Fog
+option.CUSTOM_NIGHT_BRIGHTNESS = Use Night Brightness
+option.NIGHT_BRIGHTNESS = Night Brightness

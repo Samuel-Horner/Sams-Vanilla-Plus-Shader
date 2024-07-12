@@ -5,6 +5,14 @@
 uniform sampler2D shadowtex0;
 uniform sampler2D lightmap;
 
+#ifndef NO_SHADING
+uniform int worldTime;
+uniform int worldDays;
+
+const int sunrise = -1000;
+const int use_day_min = 24000 + sunrise;
+#endif
+
 #ifdef DYNAMICLIGHT
 uniform int heldItemId;
 uniform int heldItemId2;
@@ -23,6 +31,9 @@ const int totalSamples = shadowSamplesPerSize * shadowSamplesPerSize;
 
 #ifndef NO_SHADING
 float getShadow(in vec4 sampleCoords, in sampler2D tex){
+    #ifdef NO_SHADOWS
+    return 1.;
+    #endif
     if (sampleCoords.w > 0.001){
         #ifdef SMOOTH_SHADOWS
             float randomAngle = texture2D(noisetex, sampleCoords.xy * 20.).r * 100.;
@@ -70,7 +81,12 @@ void calcLighting(in vec2 lm, inout vec4 color, in float vertexDistance) {
     }
     #endif
     #ifndef NO_SHADING
-    float all_shadow = getShadow(shadowPos, shadowtex0);
+    float night_level = worldTime < use_day_min && worldTime > 6000 ? smoothstep(13000., 14000., float(worldTime)) : 1. - smoothstep(0., 1000., float((worldTime - sunrise) % 24000)); // 1 when night 0 when not
+    #ifdef CUSTOM_NIGHT_BRIGHTNESS
+        float all_shadow = mix(getShadow(shadowPos, shadowtex0), NIGHT_BRIGHTNESS, night_level);
+    #else
+        float all_shadow = mix(getShadow(shadowPos, shadowtex0), SHADOW_BRIGHTNESS, night_level);
+    #endif
     color *= vec4(texture(lightmap, lm).xyz * pow(all_shadow, pow(1. - lm.x, 2.2)), 1.);
     #else
     color *= vec4(texture(lightmap, lm).xyz, 1.);
@@ -86,10 +102,14 @@ uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
-uniform vec3 shadowLightPosition;
+uniform vec3 sunPosition;
 
 void calcShadows(out vec4 shadowPos) {
-    float lightDot = dot(normalize(shadowLightPosition), normalize(gl_NormalMatrix * gl_Normal));
+    #ifdef NO_SHADOWS
+    shadowPos = vec4(0.);
+    return;
+    #endif
+    float lightDot = dot(normalize(sunPosition), normalize(gl_NormalMatrix * gl_Normal));
     if (lightDot > 0.){
         vec4 viewPos = gl_ModelViewMatrix * gl_Vertex;
         vec4 playerPos = gbufferModelViewInverse * viewPos;
