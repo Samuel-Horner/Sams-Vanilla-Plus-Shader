@@ -8,8 +8,6 @@ const int shadowMapResolution = 1024; // [128 256 512 1024 2048 4096 8192]
 #define SHADOW_SAMPLES 2 // [2 4 6 8]
 #define SHADOW_BRIGHTNESS 0.7 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
-// #define CUSTOM_NIGHT_BRIGHTNESS
-#define NIGHT_BRIGHTNESS 0.7 // [0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 #define DYNAMICLIGHT
 #define DYNAMICLIGHT_RADIUS 8 // [4 5 6 7 8 9 10 11 12 13 14 15 16]
 

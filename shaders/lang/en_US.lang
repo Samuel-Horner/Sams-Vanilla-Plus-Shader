@@ -21,5 +21,3 @@ option.DYNAMICLIGHT = Dynamic Light
 option.DYNAMICLIGHT_RADIUS = Dynamic Light Radius
 option.sunPathRotation = Sun Rotation
 option.FOG = Border Fog
-option.CUSTOM_NIGHT_BRIGHTNESS = Use Night Brightness
-option.NIGHT_BRIGHTNESS = Night Brightness

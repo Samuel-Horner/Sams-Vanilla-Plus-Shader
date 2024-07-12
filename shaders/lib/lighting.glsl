@@ -82,11 +82,7 @@ void calcLighting(in vec2 lm, inout vec4 color, in float vertexDistance) {
     #endif
     #ifndef NO_SHADING
     float night_level = worldTime < use_day_min && worldTime > 6000 ? smoothstep(13000., 14000., float(worldTime)) : 1. - smoothstep(0., 1000., float((worldTime - sunrise) % 24000)); // 1 when night 0 when not
-    #ifdef CUSTOM_NIGHT_BRIGHTNESS
-        float all_shadow = mix(getShadow(shadowPos, shadowtex0), NIGHT_BRIGHTNESS, night_level);
-    #else
-        float all_shadow = mix(getShadow(shadowPos, shadowtex0), SHADOW_BRIGHTNESS, night_level);
-    #endif
+    float all_shadow = mix(getShadow(shadowPos, shadowtex0), SHADOW_BRIGHTNESS, night_level);
     color *= vec4(texture(lightmap, lm).xyz * pow(all_shadow, pow(1. - lm.x, 2.2)), 1.);
     #else
     color *= vec4(texture(lightmap, lm).xyz, 1.);
